@@ -1,0 +1,265 @@
+-- Before into the psql, bestsellers_data.csv was cleaned by deleting the first row (column names row) in order to use \copy.
+-- The modification was mentioned in the clean process of phase 2 and conducted by using vim as:
+-- vi bestsellers_data.csv
+-- # delete the first line "dd" then save and quit
+-- now the bestsellers_data.csv will begin with data directly, and ready to use in psql for import.
+
+--
+\echo -------------------- Loading schema and data: --------------------
+\i schema.ddl
+-- CREATE SCHEMA
+-- SET
+-- CREATE DOMAIN
+-- CREATE TABLE
+-- CREATE TABLE
+-- CREATE TABLE
+-- CREATE TABLE
+\i demo-data.txt
+-- creating raw table for importing data (bestsellers_data.csv) and copy
+-- CREATE TABLE
+-- COPY 550
+-- inserting data into each table
+-- INSERT 0 361
+-- INSERT 0 248
+-- INSERT 0 361
+-- INSERT 0 582
+-- show load data and schema successfully
+--                     Table "bestseller.data"
+--    Column   |       Type       | Collation | Nullable | Default 
+-- ------------+------------------+-----------+----------+---------
+--  name       | text             |           |          | 
+--  author     | text             |           |          | 
+--  userrating | double precision |           |          | 
+--  reviews    | integer          |           |          | 
+--  price      | integer          |           |          | 
+--  year       | integer          |           |          | 
+--  genre      | text             |           |          | 
+
+--                             Table "bestseller.book"
+--   Column  |  Type   | Collation | Nullable |              Default              
+-- ----------+---------+-----------+----------+-----------------------------------
+--  bid      | integer |           | not null | nextval('book_bid_seq'::regclass)
+--  bookname | text    |           | not null | 
+--  price    | integer |           | not null | 
+--  genre    | genre   |           | not null | 
+-- Indexes:
+--     "book_pkey" PRIMARY KEY, btree (bid)
+-- Referenced by:
+--     TABLE "feedback" CONSTRAINT "feedback_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+--     TABLE "written" CONSTRAINT "written_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
+
+--                              Table "bestseller.author"
+--    Column   |  Type   | Collation | Nullable |               Default               
+-- ------------+---------+-----------+----------+-------------------------------------
+--  aid        | integer |           | not null | nextval('author_aid_seq'::regclass)
+--  authorname | text    |           | not null | 
+-- Indexes:
+--     "author_pkey" PRIMARY KEY, btree (aid)
+-- Referenced by:
+--     TABLE "written" CONSTRAINT "written_aid_fkey" FOREIGN KEY (aid) REFERENCES author(aid)
+
+--             Table "bestseller.written"
+--  Column |  Type   | Collation | Nullable | Default 
+-- --------+---------+-----------+----------+---------
+--  aid    | integer |           | not null | 
+--  bid    | integer |           | not null | 
+-- Indexes:
+--     "written_pkey" PRIMARY KEY, btree (aid, bid)
+-- Foreign-key constraints:
+--     "written_aid_fkey" FOREIGN KEY (aid) REFERENCES author(aid)
+--     "written_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
+--                   Table "bestseller.feedback"
+--    Column   |       Type       | Collation | Nullable | Default 
+-- ------------+------------------+-----------+----------+---------
+--  bid        | integer          |           | not null | 
+--  year       | integer          |           | not null | 
+--  userrating | double precision |           | not null | 
+--  review     | integer          |           | not null | 
+-- Indexes:
+--     "feedback_pkey" PRIMARY KEY, btree (bid, year)
+-- Foreign-key constraints:
+--     "feedback_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
+
+
+\echo  -------------------- Investigative Question 1: ------------------ 
+\echo  Q1. How are the booktype and popularity related. 
+\echo  Are fiction books always more popular than non-fiction books?
+\echo  How are the readers' feedback and popularity related?
+\i queries1.sql
+-- CREATE VIEW
+-- All the books in the top 20 books:
+--  bid |                                                           bookname                                                           |    genre    | userrating | review 
+-- -----+------------------------------------------------------------------------------------------------------------------------------+-------------+------------+--------
+--   23 | Rush Revere and the Brave Pilgrims: Time-Travel Adventures with Exceptional Americans (1)                                    | Fiction     |        4.9 |   7150
+--   31 | Hamilton: The Revolution                                                                                                     | Non Fiction |        4.9 |   5867
+--   34 | Harry Potter and the Chamber of Secrets: The Illustrated Edition (Harry Potter, Book 2)                                      | Fiction     |        4.9 |  19622
+--   93 | Jesus Calling: Enjoying Peace in His Presence (with Scripture References)                                                    | Non Fiction |        4.9 |  19576
+--  101 | Wrecking Ball (Diary of a Wimpy Kid Book 14)                                                                                 | Fiction     |        4.9 |   9413
+--  105 | Oh, the Places You'll Go!                                                                                                    | Fiction     |        4.9 |  21834
+--  137 | Dog Man: Fetch-22: From the Creator of Captain Underpants (Dog Man #8)                                                       | Fiction     |        4.9 |  12619
+--  144 | Harry Potter and the Sorcerer's Stone: The Illustrated Edition (Harry Potter, Book 1)                                        | Fiction     |        4.9 |  10052
+--  169 | Dog Man: For Whom the Ball Rolls: From the Creator of Captain Underpants (Dog Man #7)                                        | Fiction     |        4.9 |   9089
+--  181 | The Wonderful Things You Will Be                                                                                             | Fiction     |        4.9 |   8842
+--  198 | Brown Bear, Brown Bear, What Do You See?                                                                                     | Fiction     |        4.9 |  14344
+--  210 | Goodnight, Goodnight Construction Site (Hardcover Books for Toddlers, Preschool Books for Kids)                              | Fiction     |        4.9 |   7038
+--  211 | Strange Planet (Strange Planet Series)                                                                                       | Fiction     |        4.9 |   9382
+--  243 | Dog Man: Lord of the Fleas: From the Creator of Captain Underpants (Dog Man #5)                                              | Fiction     |        4.9 |   5470
+--  250 | The Very Hungry Caterpillar                                                                                                  | Fiction     |        4.9 |  19546
+--  257 | Unfreedom of the Press                                                                                                       | Non Fiction |        4.9 |   5956
+--  281 | The Magnolia Story                                                                                                           | Non Fiction |        4.9 |   7861
+--  346 | Harry Potter and the Goblet of Fire: The Illustrated Edition (Harry Potter, Book 4) (4)                                      | Fiction     |        4.9 |   7758
+--  350 | Last Week Tonight with John Oliver Presents A Day in the Life of Marlon Bundo (Better Bundo Book, LGBT Children\u0092s Book) | Fiction     |        4.9 |  11881
+--  351 | Dog Man: Brawl of the Wild: From the Creator of Captain Underpants (Dog Man #6)                                              | Fiction     |        4.9 |   7235
+-- (20 rows)
+
+-- The number of Fiction and non-fiction books (f and nf) among these 20 books:
+--  f  | nf 
+-- ----+----
+--  16 |  4
+-- (1 row)
+
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- Top 1 for each year from 2009 to 2019, if there is a tie, report them all:
+--  bid | year | userrating | review |    genre    
+-- -----+------+------------+--------+-------------
+--  179 | 2009 |        4.8 |  13871 | Fiction
+--   94 | 2009 |        4.8 |  13871 | Fiction
+--  267 | 2009 |        4.8 |  13871 | Fiction
+--  213 | 2010 |        4.8 |  29673 | Non Fiction
+--  206 | 2010 |        4.8 |  29673 | Non Fiction
+--   93 | 2011 |        4.9 |  19576 | Non Fiction
+--  105 | 2012 |        4.9 |  21834 | Fiction
+--  105 | 2013 |        4.9 |  21834 | Fiction
+--  105 | 2014 |        4.9 |  21834 | Fiction
+--  105 | 2015 |        4.9 |  21834 | Fiction
+--  105 | 2016 |        4.9 |  21834 | Fiction
+--  105 | 2017 |        4.9 |  21834 | Fiction
+--  105 | 2018 |        4.9 |  21834 | Fiction
+--  105 | 2019 |        4.9 |  21834 | Fiction
+-- (14 rows)
+
+-- The number of Fiction and non-fiction books (f and nf) among these yearly top 1 books:
+--  f  | nf 
+-- ----+----
+--  11 |  3
+-- (1 row)
+
+\echo  -------------------- Investigative Question 2: ------------------ 
+\echo  Q2. For the books that are bestsellers for multiple years, 
+\echo  do they always have higher ratings than the books who only be the bestseller for one year? 
+\echo  Are these books always having non-decreasing reviews or reader ratings?
+\i queries2.sql
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- The number and frequency of single-year-bestseller books has lower rating than each multiple-years-bestseller book:
+-- Here only demo the top 5 that beats the most single-year-bestseller books
+-- The entire result was stored in the view HigherRatingOverview
+-- CREATE VIEW
+--  bid | num | freq 
+-- -----+-----+------
+--  351 | 234 | 0.92
+--  198 | 234 | 0.92
+--  210 | 234 | 0.92
+--  250 | 234 | 0.92
+--  105 | 234 | 0.92
+--   93 | 234 | 0.92
+--  181 | 234 | 0.92
+--   15 | 177 | 0.69
+--   67 | 177 | 0.69
+--   12 | 177 | 0.69
+-- (10 rows)
+
+-- CREATE VIEW
+-- The multiple-years-bestseller book that has non-decreasing reader ratings:
+-- Here only demo the multiple-years-bestseller books always having higher than 4.8 rating
+-- The entire result was stored in the view NonDecreasingRatingOverview
+-- CREATE VIEW
+-- CREATE VIEW
+--  bid | year | userrating 
+-- -----+------+------------
+--   93 | 2011 |        4.9
+--   93 | 2012 |        4.9
+--   93 | 2013 |        4.9
+--   93 | 2014 |        4.9
+--   93 | 2015 |        4.9
+--   93 | 2016 |        4.9
+--  105 | 2012 |        4.9
+--  105 | 2013 |        4.9
+--  105 | 2014 |        4.9
+--  105 | 2015 |        4.9
+--  105 | 2016 |        4.9
+--  105 | 2017 |        4.9
+--  105 | 2018 |        4.9
+--  105 | 2019 |        4.9
+--  181 | 2016 |        4.9
+--  181 | 2017 |        4.9
+--  181 | 2018 |        4.9
+--  181 | 2019 |        4.9
+--  198 | 2017 |        4.9
+--  198 | 2019 |        4.9
+--  210 | 2012 |        4.9
+--  210 | 2013 |        4.9
+--  250 | 2013 |        4.9
+--  250 | 2014 |        4.9
+--  250 | 2015 |        4.9
+--  250 | 2016 |        4.9
+--  250 | 2017 |        4.9
+--  250 | 2018 |        4.9
+--  250 | 2019 |        4.9
+--  351 | 2018 |        4.9
+--  351 | 2019 |        4.9
+-- (31 rows)
+-- The multiple-years-bestseller book that has non-decreasing reviews:
+-- Here only demo the multiple-years-bestseller books having at least 40000 reviews
+-- The entire result was stored in the view NonDecreasingReviewOverview
+-- CREATE VIEW
+--  bid | year | review 
+-- -----+------+--------
+--    6 | 2012 |  57271
+--    6 | 2013 |  57271
+--    6 | 2014 |  57271
+--   85 | 2012 |  50482
+--   85 | 2013 |  50482
+--   85 | 2014 |  50482
+--  118 | 2012 |  47265
+--  118 | 2013 |  47265
+--  131 | 2012 |  50482
+--  131 | 2013 |  50482
+--  131 | 2014 |  50482
+--  136 | 2018 |  61133
+--  136 | 2019 |  61133
+--  260 | 2015 |  79446
+--  260 | 2016 |  79446
+--  296 | 2015 |  79446
+--  296 | 2016 |  79446
+--  334 | 2012 |  57271
+--  334 | 2013 |  57271
+--  334 | 2014 |  57271
+--  337 | 2015 |  49288
+--  337 | 2016 |  49288
+-- (22 rows)
+\echo  -------------------- Investigative Question 3: ------------------
+\echo  Q3. For the authors who have multiple published books and are bestsellers, 
+\echo  do they always focus on writing single genre types?
+\i queries3.sql
+-- CREATE VIEW
+-- CREATE VIEW
+-- CREATE VIEW
+-- Report the number of fiction books and nonfuction books wrote by Authors have multi bestseller books
+-- The entire result was stored in the view Answer
+-- CREATE VIEW
+-- Here we only demo Authors have worte both fiction books and nonFiction books
+--  aid | authorname | ficnum | nonficnum 
+-- -----+------------+--------+-----------
+--    4 | DK         |      1 |         1
+--   19 | Scholastic |      1 |         1
+-- (2 rows)

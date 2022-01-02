@@ -1,0 +1,97 @@
+\echo creating raw table for importing data (bestsellers_data.csv) and copy
+CREATE TABLE data (name text, 
+			author text, 
+			userrating double precision, 
+			reviews integer, 
+			price integer, 
+			year integer, 
+			genre text);
+\COPY data from bestsellers_data.csv with CSV;
+-- COPY 550
+\echo inserting data into each table
+insert into Book(bookname, price, genre)(
+	select distinct name as bookname, price, genre from data);
+-- INSERT 0 361
+
+
+insert into author(authorname)(select distinct author from data);
+-- INSERT 0 248
+
+insert into written(
+		select aid, bid 
+		from (select distinct name, author from data) data, book, author 
+		where data.name = book.bookname and data.author = author.authorname);
+-- INSERT 0 361
+
+insert into feedback(
+			select bid, year, userrating, reviews as review 
+			from book, (select distinct name, userrating, year, reviews from data) data
+			where book.bookname = data.name);
+-- INSERT 0 582
+
+\echo show load data and schema successfully
+\d data
+-- Table "bestseller.data"
+--    Column   |       Type       | Collation | Nullable | Default 
+-- ------------+------------------+-----------+----------+---------
+--  name       | text             |           |          | 
+--  author     | text             |           |          | 
+--  userrating | double precision |           |          | 
+--  reviews    | integer          |           |          | 
+--  price      | integer          |           |          | 
+--  year       | integer          |           |          | 
+--  genre      | text             |           |          |
+
+\d Book
+--                             Table "bestseller.book"
+--   Column  |  Type   | Collation | Nullable |              Default              
+-- ----------+---------+-----------+----------+-----------------------------------
+--  bid      | integer |           | not null | nextval('book_bid_seq'::regclass)
+--  bookname | text    |           | not null | 
+--  price    | integer |           | not null | 
+--  genre    | genre   |           | not null | 
+-- Indexes:
+--     "book_pkey" PRIMARY KEY, btree (bid)
+-- Referenced by:
+--     TABLE "feedback" CONSTRAINT "feedback_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+--     TABLE "written" CONSTRAINT "written_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
+
+\d author
+-- Table "bestseller.author"
+--    Column   |  Type   | Collation | Nullable |               Default               
+-- ------------+---------+-----------+----------+-------------------------------------
+--  aid        | integer |           | not null | nextval('author_aid_seq'::regclass)
+--  authorname | text    |           | not null | 
+-- Indexes:
+--     "author_pkey" PRIMARY KEY, btree (aid)
+-- Referenced by:
+--     TABLE "written" CONSTRAINT "written_aid_fkey" FOREIGN KEY (aid) REFERENCES author(aid)
+
+
+\d written
+-- Table "bestseller.written"
+--  Column |  Type   | Collation | Nullable | Default 
+-- --------+---------+-----------+----------+---------
+--  aid    | integer |           | not null | 
+--  bid    | integer |           | not null | 
+-- Indexes:
+--     "written_pkey" PRIMARY KEY, btree (aid, bid)
+-- Foreign-key constraints:
+--     "written_aid_fkey" FOREIGN KEY (aid) REFERENCES author(aid)
+--     "written_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
+
+\d feedback
+-- Table "bestseller.feedback"
+--    Column   |       Type       | Collation | Nullable | Default 
+-- ------------+------------------+-----------+----------+---------
+--  bid        | integer          |           | not null | 
+--  year       | integer          |           | not null | 
+--  userrating | double precision |           | not null | 
+--  review     | integer          |           | not null | 
+-- Indexes:
+--     "feedback_pkey" PRIMARY KEY, btree (bid, year)
+-- Foreign-key constraints:
+--     "feedback_bid_fkey" FOREIGN KEY (bid) REFERENCES book(bid)
+
